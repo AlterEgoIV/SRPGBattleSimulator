@@ -116,5 +116,7 @@ Thumbs.db
 ## Project
 
 *.png
+*.jpg
 *.wav
 *.mp3
+*.mp4
