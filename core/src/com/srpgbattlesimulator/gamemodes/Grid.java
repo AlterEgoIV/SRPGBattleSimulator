@@ -2,13 +2,13 @@ package com.srpgbattlesimulator.gamemodes;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.srpgbattlesimulator.TerrainName;
 import com.srpgbattlesimulator.gameobjects.Tile;
 import com.srpgbattlesimulator.gameobjects.Unit;
 import com.srpgbattlesimulator.rendering.Shape;
 import com.srpgbattlesimulator.rendering.ShapeName;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Carl on 06/05/2019.
@@ -18,7 +18,7 @@ public class Grid
     private int columns, rows;
     private float tileWidth, tileHeight;
     public Tile[][] tiles;
-    public List<Tile> activeTiles;
+    public List<Tile> activeTiles, potentialTiles;
 
     public Grid(int columns, int rows, float tileWidth, float tileHeight)
     {
@@ -28,6 +28,7 @@ public class Grid
         this.tileHeight = tileHeight;
         this.tiles = new Tile[columns][rows];
         this.activeTiles = new ArrayList<Tile>();
+        this.potentialTiles = new ArrayList<Tile>();
 
         for(int i = 0; i < columns; ++i)
         {
@@ -42,25 +43,32 @@ public class Grid
     {
         Tile startTile = unit.startTile;
         int movement = unit.getMovement();
-        int horizontalTiles = 1;
+        startTile.setAccumulatedTerrainCost(0);
         activeTiles.clear();
+        potentialTiles.clear();
 
-        for(int i = movement; i >= 0; --i)
+        if(!isOutOfBounds(startTile.getColumn(), startTile.getRow())) potentialTiles.add(startTile);
+
+        while(potentialTiles.size() > 0)
         {
-            for(int j = -horizontalTiles / 2; j <= horizontalTiles / 2; ++j)
-            {
-                if(i > 0)
-                {
-                    if(!isOutOfBounds(startTile.getColumn() + j, startTile.getRow() + i)) activeTiles.add(tiles[startTile.getColumn() + j][startTile.getRow() + i]);
-                    if(!isOutOfBounds(startTile.getColumn() + j, startTile.getRow() - i)) activeTiles.add(tiles[startTile.getColumn() + j][startTile.getRow() - i]);
-                }
-                else
-                {
-                    if(!isOutOfBounds(startTile.getColumn() + j, startTile.getRow())) activeTiles.add(tiles[startTile.getColumn() + j][startTile.getRow()]);
-                }
-            }
+            Tile tile = Collections.min(potentialTiles, Comparator.comparing(Tile::getAccumulatedTerrainCost));
 
-            horizontalTiles += 2;
+            addPotentialTile(tile, movement, tile.getColumn(), tile.getRow() + 1);
+            addPotentialTile(tile, movement, tile.getColumn(), tile.getRow() - 1);
+            addPotentialTile(tile, movement, tile.getColumn() - 1, tile.getRow());
+            addPotentialTile(tile, movement, tile.getColumn() + 1, tile.getRow());
+
+            if(!activeTiles.contains(tile)) activeTiles.add(tile);
+            potentialTiles.remove(tile);
+        }
+    }
+
+    private void addPotentialTile(Tile tile, int movement, int column, int row)
+    {
+        if(!isOutOfBounds(column, row) && tiles[column][row].terrainName != TerrainName.WATER && movement >= tile.getAccumulatedTerrainCost() + tiles[column][row].getTerrainCost())
+        {
+            tiles[column][row].setAccumulatedTerrainCost(tiles[column][row].getTerrainCost() + tile.getAccumulatedTerrainCost());
+            potentialTiles.add(tiles[column][row]);
         }
     }
 

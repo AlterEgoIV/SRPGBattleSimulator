@@ -42,9 +42,9 @@ public class Battle
         this.isNewTurn = true;
         this.turnCount = 0;
         this.currentUnit = 0;
-        this.gridColumns = 10;
-        this.gridRows = 10;
-        grid = new Grid(gridColumns, gridRows, Gdx.graphics.getWidth() / gridColumns, Gdx.graphics.getHeight() / gridRows);
+        this.gridColumns = 20;
+        this.gridRows = 20;
+        grid = new Grid(gridColumns, gridRows, (float)Gdx.graphics.getWidth() / gridColumns, (float)Gdx.graphics.getHeight() / gridRows);
         battleState = BattleState.TRANSITION_CURSOR_STATE;
         units = new ArrayList<Unit>();
         createUnits();
@@ -142,7 +142,7 @@ public class Battle
 
                 for(Tile tile : grid.activeTiles)
                 {
-                    tile.shape.fillColor = Color.BLUE;
+                    tile.shape.fillColor = Color.WHITE;
                 }
 
                 break;
@@ -187,7 +187,7 @@ public class Battle
 
                 for(Tile tile : grid.activeTiles)
                 {
-                    tile.shape.fillColor = Color.SKY;
+                    tile.shape.fillColor = tile.shape.defaultFillColor;
                 }
 
                 break;
@@ -283,7 +283,7 @@ public class Battle
             grid.getTileHeight(),
             new Color(red, green, blue, alpha),
             Color.CLEAR,
-            grid.tiles[tileColumn][tileRow], 3));
+            grid.tiles[tileColumn][tileRow], 4));
         }
     }
 
