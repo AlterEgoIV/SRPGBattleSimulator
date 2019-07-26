@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.srpgbattlesimulator.MovementType;
 import com.srpgbattlesimulator.input.InputState;
 import com.srpgbattlesimulator.gameobjects.BattleCursor;
 import com.srpgbattlesimulator.gameobjects.Tile;
@@ -283,7 +284,8 @@ public class Battle
             grid.getTileHeight(),
             new Color(red, green, blue, alpha),
             Color.CLEAR,
-            grid.tiles[tileColumn][tileRow], 4));
+            grid.tiles[tileColumn][tileRow], 4,
+            Math.random() >= .5f ? MovementType.FOOT : MovementType.FLY));
         }
     }
 
@@ -292,8 +294,8 @@ public class Battle
         return new BattleCursor(position, width, height, new Shape(position, width, height, ShapeName.RECT, fillColor, outlineColor, 4), startTile);
     }
 
-    private Unit createUnit(Vector2 position, float width, float height, Color fillColor, Color outlineColor, Tile startTile, int movement)
+    private Unit createUnit(Vector2 position, float width, float height, Color fillColor, Color outlineColor, Tile startTile, int movement, MovementType movementType)
     {
-        return new Unit(position, width, height, new Shape(position, width, height, ShapeName.ELLIPSE, fillColor, outlineColor, 4), startTile, movement);
+        return new Unit(position, width, height, new Shape(position, width, height, ShapeName.ELLIPSE, fillColor, outlineColor, 4), startTile, movement, movementType);
     }
 }

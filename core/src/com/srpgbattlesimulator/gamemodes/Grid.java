@@ -2,7 +2,8 @@ package com.srpgbattlesimulator.gamemodes;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.srpgbattlesimulator.TerrainName;
+import com.srpgbattlesimulator.MovementType;
+import com.srpgbattlesimulator.TerrainType;
 import com.srpgbattlesimulator.gameobjects.Tile;
 import com.srpgbattlesimulator.gameobjects.Unit;
 import com.srpgbattlesimulator.rendering.Shape;
@@ -42,6 +43,7 @@ public class Grid
     public void setActiveTiles(Unit unit)
     {
         Tile startTile = unit.startTile;
+        MovementType movementType = unit.movementType;
         int movement = unit.getMovement();
         startTile.setAccumulatedTerrainCost(0);
         activeTiles.clear();
@@ -53,23 +55,50 @@ public class Grid
         {
             Tile tile = Collections.min(potentialTiles, Comparator.comparing(Tile::getAccumulatedTerrainCost));
 
-            addPotentialTile(tile, movement, tile.getColumn(), tile.getRow() + 1);
-            addPotentialTile(tile, movement, tile.getColumn(), tile.getRow() - 1);
-            addPotentialTile(tile, movement, tile.getColumn() - 1, tile.getRow());
-            addPotentialTile(tile, movement, tile.getColumn() + 1, tile.getRow());
+            addPotentialTile(tile, movement, movementType, tile.getColumn(), tile.getRow() + 1);
+            addPotentialTile(tile, movement, movementType, tile.getColumn(), tile.getRow() - 1);
+            addPotentialTile(tile, movement, movementType, tile.getColumn() - 1, tile.getRow());
+            addPotentialTile(tile, movement, movementType, tile.getColumn() + 1, tile.getRow());
 
             if(!activeTiles.contains(tile)) activeTiles.add(tile);
             potentialTiles.remove(tile);
         }
     }
 
-    private void addPotentialTile(Tile tile, int movement, int column, int row)
+    private void addPotentialTile(Tile tile, int movement, MovementType movementType, int column, int row)
     {
-        if(!isOutOfBounds(column, row) && tiles[column][row].terrainName != TerrainName.WATER && movement >= tile.getAccumulatedTerrainCost() + tiles[column][row].getTerrainCost())
+        if(!isOutOfBounds(column, row))
         {
-            tiles[column][row].setAccumulatedTerrainCost(tiles[column][row].getTerrainCost() + tile.getAccumulatedTerrainCost());
-            potentialTiles.add(tiles[column][row]);
+            boolean isMovementCompatible = isMovementCompatible(movementType, tiles[column][row].terrainType);
+            float movementCost = getMovementCost(movementType, tiles[column][row].terrainType);
+
+            if(isMovementCompatible && movement >= tile.getAccumulatedTerrainCost() + movementCost)
+            {
+                tiles[column][row].setAccumulatedTerrainCost(tile.getAccumulatedTerrainCost() + movementCost);
+                potentialTiles.add(tiles[column][row]);
+            }
         }
+    }
+
+    private boolean isMovementCompatible(MovementType movementType, TerrainType terrainType)
+    {
+        return !(movementType == MovementType.FOOT && terrainType == TerrainType.WATER);
+    }
+
+    private float getMovementCost(MovementType movementType, TerrainType terrainType)
+    {
+        float movementCost = 0f;
+
+        if(movementType == MovementType.FOOT && terrainType == TerrainType.GRASS) movementCost = 1f;
+        if(movementType == MovementType.FOOT && terrainType == TerrainType.FOREST) movementCost = 1.5f;
+        if(movementType == MovementType.FOOT && terrainType == TerrainType.MOUNTAIN) movementCost = 2f;
+
+        if(movementType == MovementType.FLY && terrainType == TerrainType.GRASS) movementCost = 1f;
+        if(movementType == MovementType.FLY && terrainType == TerrainType.FOREST) movementCost = 1f;
+        if(movementType == MovementType.FLY && terrainType == TerrainType.MOUNTAIN) movementCost = 1f;
+        if(movementType == MovementType.FLY && terrainType == TerrainType.WATER) movementCost = 1f;
+
+        return movementCost;
     }
 
     public boolean isOutOfBounds(int column, int row)
