@@ -63,7 +63,6 @@ public class Battle
         }
 
         activeUnit = units.get(currentUnit);
-        grid.setActiveTiles(activeUnit);
 
         updateBattleState();
         updateRenderables();
@@ -140,11 +139,7 @@ public class Battle
             case CONTROL_PLAYER_UNIT_STATE:
             {
                 activeUnit.shape.outlineColor = Color.WHITE;
-
-                for(Tile tile : grid.activeTiles)
-                {
-                    tile.shape.fillColor = Color.WHITE;
-                }
+                grid.setActiveTiles(activeUnit);
 
                 break;
             }
@@ -185,11 +180,7 @@ public class Battle
                 battleCursor.startTile = activeUnit.startTile;
                 battleCursor.currentTile = battleCursor.startTile;
                 battleCursor.position.set(battleCursor.startTile.position);
-
-                for(Tile tile : grid.activeTiles)
-                {
-                    tile.shape.fillColor = tile.shape.defaultFillColor;
-                }
+                grid.activeTiles.clear();
 
                 break;
             }
@@ -257,6 +248,11 @@ public class Battle
             {
                 renderables.add(grid.tiles[i][j].shape);
             }
+        }
+
+        for(Tile tile : grid.activeTiles)
+        {
+            renderables.add(tile.overlay);
         }
 
         for(Unit unit : units)
