@@ -74,8 +74,11 @@ public class Grid
 
             if(isMovementCompatible && movement >= tile.getAccumulatedTerrainCost() + movementCost)
             {
-                tiles[column][row].setAccumulatedTerrainCost(tile.getAccumulatedTerrainCost() + movementCost);
-                potentialTiles.add(tiles[column][row]);
+                if(!activeTiles.contains(tiles[column][row]) && !potentialTiles.contains(tiles[column][row]))
+                {
+                    tiles[column][row].setAccumulatedTerrainCost(tile.getAccumulatedTerrainCost() + movementCost);
+                    potentialTiles.add(tiles[column][row]);
+                }
             }
         }
     }

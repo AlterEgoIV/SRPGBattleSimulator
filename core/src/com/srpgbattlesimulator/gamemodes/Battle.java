@@ -284,7 +284,7 @@ public class Battle
             grid.getTileHeight(),
             new Color(red, green, blue, alpha),
             Color.CLEAR,
-            grid.tiles[tileColumn][tileRow], 4,
+            grid.tiles[tileColumn][tileRow], 3,
             Math.random() >= .5f ? MovementType.FOOT : MovementType.FLY));
         }
     }
