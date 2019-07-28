@@ -99,6 +99,11 @@ public class Battle
                 if(!activeUnit.isMoving()) handlePlayerUnitInput();
                 if(activeUnit.isMoving()) activeUnit.move();
 
+                for(Tile tile : grid.activeTiles)
+                {
+                    tile.update();
+                }
+
                 break;
             }
 
@@ -140,6 +145,17 @@ public class Battle
             {
                 activeUnit.shape.outlineColor = Color.WHITE;
                 grid.setActiveTiles(activeUnit);
+
+                for(Tile tile : grid.activeTiles)
+                {
+                    tile.hue = 0f;
+                    tile.elapsedTime = 0f;
+
+                    if(tile.colorShiftPerFrame < 0)
+                    {
+                        tile.colorShiftPerFrame *= -1;
+                    }
+                }
 
                 break;
             }
@@ -280,7 +296,7 @@ public class Battle
             grid.getTileHeight(),
             new Color(red, green, blue, alpha),
             Color.CLEAR,
-            grid.tiles[tileColumn][tileRow], 3,
+            grid.tiles[tileColumn][tileRow], 4,
             Math.random() >= .5f ? MovementType.FOOT : MovementType.FLY));
         }
     }

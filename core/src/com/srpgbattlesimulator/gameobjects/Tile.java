@@ -1,5 +1,6 @@
 package com.srpgbattlesimulator.gameobjects;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.TerrainType;
@@ -13,8 +14,9 @@ public class Tile extends GameObject
 {
     private int column, row;
     public TerrainType terrainType;
-    private float terrainCost, accumulatedTerrainCost;
+    private float terrainCost, accumulatedTerrainCost, colorShiftTime;
     public Shape overlay;
+    public float hue, elapsedTime, colorShiftPerFrame;
 
     public Tile(Vector2 position, float width, float height, int column, int row, Shape shape)
     {
@@ -23,7 +25,11 @@ public class Tile extends GameObject
         this.row = row;
         this.terrainCost = 1;
         this.accumulatedTerrainCost = 1;
-        this.overlay = new Shape(position.cpy(), width, height, ShapeName.RECT, new Color(1f, 1f, 1f, .7f), Color.CLEAR, 0);
+        this.overlay = new Shape(position.cpy(), width, height, ShapeName.RECT, new Color(0f, 0f, 0f, .7f), Color.CLEAR, 0);
+        this.hue = 0;
+        this.elapsedTime = 0f;
+        this.colorShiftTime = .6f;
+        this.colorShiftPerFrame = 1 / colorShiftTime;
 
         double r = Math.random();
 
@@ -65,7 +71,17 @@ public class Tile extends GameObject
     @Override
     public void update()
     {
+        overlay.fillColor.set(hue, hue, hue, .7f);
 
+        hue += colorShiftPerFrame * Gdx.graphics.getDeltaTime();
+
+        elapsedTime += Gdx.graphics.getDeltaTime();
+
+        if(elapsedTime >= colorShiftTime)
+        {
+            colorShiftPerFrame = -colorShiftPerFrame;
+            elapsedTime = 0;
+        }
     }
 
     public int getColumn()
