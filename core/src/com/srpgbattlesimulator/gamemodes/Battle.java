@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.MovementType;
+import com.srpgbattlesimulator.input.BattleInputHandler;
+import com.srpgbattlesimulator.input.InputHandler;
 import com.srpgbattlesimulator.input.InputState;
 import com.srpgbattlesimulator.gameobjects.BattleCursor;
 import com.srpgbattlesimulator.gameobjects.Tile;
@@ -33,11 +35,10 @@ public class Battle
     private List<Unit> units;
     private Unit activeUnit;
     private BattleCursor battleCursor;
-    private InputState inputState;
+    private BattleInputHandler inputHandler;
 
     public Battle(InputState inputState, List<Renderable> renderables)
     {
-        this.inputState = inputState;
         this.renderables = renderables;
         this.isOver = false;
         this.isNewTurn = true;
@@ -52,6 +53,7 @@ public class Battle
         setTurnOrder();
         activeUnit = units.get(0);
         battleCursor = createGridCursor(activeUnit.position.cpy(), grid.getTileWidth(), grid.getTileHeight(), Color.CLEAR, Color.WHITE, activeUnit.startTile);
+        inputHandler = new BattleInputHandler(inputState, this);
     }
 
     public void update()
@@ -88,7 +90,7 @@ public class Battle
 
             case CONTROL_CURSOR_STATE:
             {
-                if(!battleCursor.isMoving()) handleBattleCursorInput();
+                if(!battleCursor.isMoving()) inputHandler.update();
                 if(battleCursor.isMoving()) battleCursor.move();
 
                 break;
@@ -96,7 +98,7 @@ public class Battle
 
             case CONTROL_PLAYER_UNIT_STATE:
             {
-                if(!activeUnit.isMoving()) handlePlayerUnitInput();
+                if(!activeUnit.isMoving()) inputHandler.update();
                 if(activeUnit.isMoving()) activeUnit.move();
 
                 for(Tile tile : grid.activeTiles)
@@ -116,7 +118,7 @@ public class Battle
         }
     }
 
-    private void transitionBattleStateTo(BattleState newState)
+    public void transitionBattleStateTo(BattleState newState)
     {
         exitBattleState(battleState);
         battleState = newState;
@@ -181,7 +183,7 @@ public class Battle
 
             case CONTROL_CURSOR_STATE:
             {
-                inputState.keyUp(Input.Keys.ENTER);
+                inputHandler.clearKey(Input.Keys.ENTER);
                 battleCursor.hide();
 
                 break;
@@ -189,7 +191,7 @@ public class Battle
 
             case CONTROL_PLAYER_UNIT_STATE:
             {
-                inputState.keyUp(Input.Keys.ENTER);
+                inputHandler.clearKey(Input.Keys.ENTER);
                 currentUnit = currentUnit < units.size() - 1 ? currentUnit + 1 : 0;
                 activeUnit.startTile = activeUnit.currentTile;
                 activeUnit.shape.outlineColor = Color.CLEAR;
@@ -215,28 +217,7 @@ public class Battle
         Collections.sort(units, Comparator.comparing(Unit::getAgility).reversed());
     }
 
-    private void handleBattleCursorInput()
-    {
-        if(inputState.isKeyDown(Input.Keys.UP)) setBattleCursorTargetTile(0, 1);
-        if(inputState.isKeyDown(Input.Keys.DOWN)) setBattleCursorTargetTile(0, -1);
-        if(inputState.isKeyDown(Input.Keys.LEFT)) setBattleCursorTargetTile(-1, 0);
-        if(inputState.isKeyDown(Input.Keys.RIGHT)) setBattleCursorTargetTile(1, 0);
-        if(inputState.isKeyDown(Input.Keys.ENTER)) transitionBattleStateTo(BattleState.CONTROL_PLAYER_UNIT_STATE);
-        if(inputState.isKeyDown(Input.Keys.BACKSPACE)) battleCursor.resetPosition();
-
-    }
-
-    private void handlePlayerUnitInput()
-    {
-        if(inputState.isKeyDown(Input.Keys.UP)) setPlayerUnitTargetTile(0, 1);
-        if(inputState.isKeyDown(Input.Keys.DOWN)) setPlayerUnitTargetTile(0, -1);
-        if(inputState.isKeyDown(Input.Keys.LEFT)) setPlayerUnitTargetTile(-1, 0);
-        if(inputState.isKeyDown(Input.Keys.RIGHT)) setPlayerUnitTargetTile(1, 0);
-        if(inputState.isKeyDown(Input.Keys.ENTER)) transitionBattleStateTo(BattleState.TRANSITION_CURSOR_STATE);
-        if(inputState.isKeyDown(Input.Keys.BACKSPACE)) activeUnit.resetPosition();
-    }
-
-    private void setBattleCursorTargetTile(int columnOffset, int rowOffset)
+    public void setBattleCursorTargetTile(int columnOffset, int rowOffset)
     {
         if(!grid.isOutOfBounds(battleCursor.currentTile.getColumn() + columnOffset, battleCursor.currentTile.getRow() + rowOffset))
         {
@@ -244,7 +225,7 @@ public class Battle
         }
     }
 
-    private void setPlayerUnitTargetTile(int columnOffset, int rowOffset)
+    public void setPlayerUnitTargetTile(int columnOffset, int rowOffset)
     {
         for(Tile tile : grid.activeTiles)
         {
@@ -254,6 +235,16 @@ public class Battle
                 break;
             }
         }
+    }
+
+    public void resetBattleCursorPosition()
+    {
+        battleCursor.resetPosition();
+    }
+
+    public void resetActiveUnitPosition()
+    {
+        activeUnit.resetPosition();
     }
 
     private void updateRenderables()
@@ -296,7 +287,7 @@ public class Battle
             grid.getTileHeight(),
             new Color(red, green, blue, alpha),
             Color.CLEAR,
-            grid.tiles[tileColumn][tileRow], 4,
+            grid.tiles[tileColumn][tileRow], 6,
             Math.random() >= .5f ? MovementType.FOOT : MovementType.FLY));
         }
     }
@@ -309,5 +300,10 @@ public class Battle
     private Unit createUnit(Vector2 position, float width, float height, Color fillColor, Color outlineColor, Tile startTile, int movement, MovementType movementType)
     {
         return new Unit(position, width, height, new Shape(position, width, height, ShapeName.ELLIPSE, fillColor, outlineColor, 4), startTile, movement, movementType);
+    }
+
+    public BattleState getBattleState()
+    {
+        return battleState;
     }
 }
