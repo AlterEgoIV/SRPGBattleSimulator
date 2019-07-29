@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.TerrainType;
 import com.srpgbattlesimulator.rendering.Shape;
 import com.srpgbattlesimulator.rendering.ShapeName;
+import com.srpgbattlesimulator.utilities.Timer;
 
 /**
  * Created by Carl on 06/05/2019.
@@ -14,9 +15,10 @@ public class Tile extends GameObject
 {
     private int column, row;
     public TerrainType terrainType;
-    private float terrainCost, accumulatedTerrainCost, colorShiftTime;
+    private float terrainCost, accumulatedTerrainCost;
     public Shape overlay;
-    public float hue, elapsedTime, colorShiftPerFrame;
+    public float hue, colorShiftPerFrame;
+    public Timer timer;
 
     public Tile(Vector2 position, float width, float height, int column, int row, Shape shape)
     {
@@ -27,9 +29,8 @@ public class Tile extends GameObject
         this.accumulatedTerrainCost = 1;
         this.overlay = new Shape(position.cpy(), width, height, ShapeName.RECT, new Color(0f, 0f, 0f, .7f), Color.CLEAR, 0);
         this.hue = 0;
-        this.elapsedTime = 0f;
-        this.colorShiftTime = .6f;
-        this.colorShiftPerFrame = 1 / colorShiftTime;
+        this.timer = new Timer(.6f);
+        this.colorShiftPerFrame = 1f / timer.getTargetTime();
 
         double r = Math.random();
 
@@ -75,12 +76,12 @@ public class Tile extends GameObject
 
         hue += colorShiftPerFrame * Gdx.graphics.getDeltaTime();
 
-        elapsedTime += Gdx.graphics.getDeltaTime();
+        timer.update();
 
-        if(elapsedTime >= colorShiftTime)
+        if(timer.hasReachedTargetTime())
         {
+            timer.reset();
             colorShiftPerFrame = -colorShiftPerFrame;
-            elapsedTime = 0;
         }
     }
 

@@ -51,7 +51,7 @@ public class Battle
         units = new ArrayList<Unit>();
         createUnits();
         setTurnOrder();
-        activeUnit = units.get(0);
+        activeUnit = units.get(currentUnit);
         battleCursor = createGridCursor(activeUnit.position.cpy(), grid.getTileWidth(), grid.getTileHeight(), Color.CLEAR, Color.WHITE, activeUnit.startTile);
         inputHandler = new BattleInputHandler(inputState, this);
     }
@@ -151,7 +151,7 @@ public class Battle
                 for(Tile tile : grid.activeTiles)
                 {
                     tile.hue = 0f;
-                    tile.elapsedTime = 0f;
+                    tile.timer.reset();
 
                     if(tile.colorShiftPerFrame < 0)
                     {
