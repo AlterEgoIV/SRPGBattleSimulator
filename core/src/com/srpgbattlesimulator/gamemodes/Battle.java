@@ -42,9 +42,9 @@ public class Battle
         this.isOver = false;
         this.isNewTurn = true;
         this.turnCount = 0;
-        this.currentUnit = 0;
         this.gridColumns = 20;
         this.gridRows = 20;
+        this.currentUnit = 0;
         grid = new Grid(gridColumns, gridRows, (float)Gdx.graphics.getWidth() / gridColumns, (float)Gdx.graphics.getHeight() / gridRows);
         battleState = BattleState.TRANSITION_CURSOR_STATE;
         units = new ArrayList<Unit>();
@@ -259,9 +259,10 @@ public class Battle
 
         for(Unit unit : units)
         {
-            renderables.add(unit.shape);
+            if(!unit.equals(activeUnit)) renderables.add(unit.shape);
         }
 
+        renderables.add(activeUnit.shape);
         renderables.add(battleCursor.shape);
     }
 
