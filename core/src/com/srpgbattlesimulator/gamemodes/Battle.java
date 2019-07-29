@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.MovementType;
 import com.srpgbattlesimulator.input.BattleInputHandler;
-import com.srpgbattlesimulator.input.InputHandler;
 import com.srpgbattlesimulator.input.InputState;
 import com.srpgbattlesimulator.gameobjects.BattleCursor;
 import com.srpgbattlesimulator.gameobjects.Tile;
@@ -152,11 +151,7 @@ public class Battle
                 {
                     tile.hue = 0f;
                     tile.timer.reset();
-
-                    if(tile.colorShiftPerFrame < 0)
-                    {
-                        tile.colorShiftPerFrame *= -1;
-                    }
+                    if(tile.deltaColor < 0) tile.deltaColor *= -1;
                 }
 
                 break;

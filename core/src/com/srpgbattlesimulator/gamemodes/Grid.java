@@ -3,6 +3,7 @@ package com.srpgbattlesimulator.gamemodes;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.MovementType;
+import com.srpgbattlesimulator.Terrain;
 import com.srpgbattlesimulator.TerrainType;
 import com.srpgbattlesimulator.gameobjects.Tile;
 import com.srpgbattlesimulator.gameobjects.Unit;
@@ -31,13 +32,7 @@ public class Grid
         this.activeTiles = new ArrayList<Tile>();
         this.potentialTiles = new ArrayList<Tile>();
 
-        for(int i = 0; i < columns; ++i)
-        {
-            for(int j = 0; j < rows; ++j)
-            {
-                tiles[i][j] = createTile(new Vector2((i * tileWidth) + tileWidth / 2f, (j * tileHeight) + tileHeight / 2f), tileWidth, tileHeight, i, j, Color.SKY, Color.BLACK);
-            }
-        }
+        createTiles();
     }
 
     public void setActiveTiles(Unit unit)
@@ -69,8 +64,8 @@ public class Grid
     {
         if(!isOutOfBounds(column, row))
         {
-            boolean isMovementCompatible = isMovementCompatible(movementType, tiles[column][row].terrainType);
-            float movementCost = getMovementCost(movementType, tiles[column][row].terrainType);
+            boolean isMovementCompatible = isMovementCompatible(movementType, tiles[column][row].getTerrainType());
+            float movementCost = getMovementCost(movementType, tiles[column][row].getTerrainType());
 
             if(isMovementCompatible && movement >= tile.getAccumulatedTerrainCost() + movementCost)
             {
@@ -109,9 +104,46 @@ public class Grid
         return column < 0 || column >= columns || row < 0 || row >= rows;
     }
 
-    private Tile createTile(Vector2 position, float width, float height, int i, int j, Color fillColor, Color outlineColor)
+    private void createTiles()
     {
-        return new Tile(position, width, height, i, j, new Shape(position, width, height, ShapeName.RECT, fillColor, outlineColor, 1));
+        for(int i = 0; i < columns; ++i)
+        {
+            for(int j = 0; j < rows; ++j)
+            {
+                double r = Math.random();
+                TerrainType terrainType;
+                Color fillColor;
+
+                if(r <= .4)
+                {
+                    terrainType = TerrainType.GRASS;
+                    fillColor = Color.GREEN;
+                }
+                else if(r <= .7)
+                {
+                    terrainType = TerrainType.FOREST;
+                    fillColor = Color.FOREST;
+                }
+                else if(r <= .9)
+                {
+                    terrainType = TerrainType.MOUNTAIN;
+                    fillColor = Color.BROWN;
+                }
+                else
+                {
+                    terrainType = TerrainType.WATER;
+                    fillColor = Color.BLUE;
+                }
+
+                tiles[i][j] = createTile(new Vector2((i * tileWidth) + tileWidth / 2f, (j * tileHeight) + tileHeight / 2f),
+                tileWidth, tileHeight, i, j, fillColor, Color.BLACK, new Terrain(terrainType));
+            }
+        }
+    }
+
+    private Tile createTile(Vector2 position, float width, float height, int i, int j, Color fillColor, Color outlineColor, Terrain terrain)
+    {
+        return new Tile(position, width, height, i, j, new Shape(position, width, height, ShapeName.RECT, fillColor, outlineColor, 1), terrain);
     }
 
     public int getColumns()

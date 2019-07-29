@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Shape extends Renderable
 {
     private ShapeName shapeName;
-    public Color fillColor, outlineColor, defaultFillColor;
+    public Color fillColor, outlineColor;
     private float outlineThickness;
 
     public Shape(Vector2 position, float width, float height, ShapeName shapeName, Color fillColor, Color outlineColor, float outlineThickness)
@@ -19,7 +19,6 @@ public class Shape extends Renderable
         this.fillColor = fillColor;
         this.outlineColor = outlineColor;
         this.outlineThickness = outlineThickness;
-        this.defaultFillColor = fillColor;
     }
 
     public ShapeName getShapeName()
