@@ -38,8 +38,8 @@ public class Grid
     public void setActiveTiles(Unit unit)
     {
         Tile startTile = unit.startTile;
-        MovementType movementType = unit.movementType;
-        int movement = unit.getMovement();
+        MovementType movementType = unit.unitData.movementType;
+        int movement = unit.unitData.getMovement();
         startTile.setAccumulatedTerrainCost(0);
         activeTiles.clear();
         potentialTiles.clear();

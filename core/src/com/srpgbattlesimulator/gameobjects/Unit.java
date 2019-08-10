@@ -2,8 +2,12 @@ package com.srpgbattlesimulator.gameobjects;
 
 import com.badlogic.gdx.math.Vector2;
 import com.srpgbattlesimulator.MovementType;
+import com.srpgbattlesimulator.UnitAttack;
+import com.srpgbattlesimulator.UnitData;
 import com.srpgbattlesimulator.rendering.Shape;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -11,17 +15,19 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Unit extends BattleObject
 {
-    private int movement, agility;
-    private boolean isPlayerUnit;
-    public MovementType movementType;
+    public UnitData unitData;
+    public List<Unit> attackTargets;
+    public List<UnitAttack> unitAttacks;
+    public UnitAttack currentUnitAttack;
+    public Unit currentTarget;
 
-    public Unit(Vector2 position, float width, float height, Shape shape, Tile startTile, int movement, MovementType movementType)
+    public Unit(Vector2 position, float width, float height, Shape shape, Tile startTile, UnitData unitData)
     {
         super(position, width, height, shape, startTile);
-        this.movement = movement;
-        this.agility = ThreadLocalRandom.current().nextInt(1, 11);
-        this.isPlayerUnit = Math.random() >= .5f;
-        this.movementType = movementType;
+        this.unitData = unitData;
+        this.attackTargets = new ArrayList<>();
+        this.unitAttacks = new ArrayList<>();
+        this.currentUnitAttack = new UnitAttack(1, 4, 1);
     }
 
     @Override
@@ -30,18 +36,22 @@ public class Unit extends BattleObject
 
     }
 
-    public int getMovement()
+    public boolean findAttackTargets(List<Unit> units)
     {
-        return movement;
-    }
+        for(Unit unit : units)
+        {
+            if(unitData.isPlayerUnit() != unit.unitData.isPlayerUnit())
+            {
+                Tile targetTile = unit.currentTile;
 
-    public int getAgility()
-    {
-        return agility;
-    }
+                if(Math.abs(currentTile.getColumn() - targetTile.getColumn()) + Math.abs(currentTile.getRow() - targetTile.getRow()) >= currentUnitAttack.rangeMin &&
+                   Math.abs(currentTile.getColumn() - targetTile.getColumn()) + Math.abs(currentTile.getRow() - targetTile.getRow()) <= currentUnitAttack.rangeMax)
+                {
+                    attackTargets.add(unit);
+                }
+            }
+        }
 
-    public boolean isPlayerUnit()
-    {
-        return isPlayerUnit;
+        return attackTargets.size() > 0;
     }
 }
