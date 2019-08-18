@@ -1,4 +1,6 @@
-package com.srpgbattlesimulator;
+package com.srpgbattlesimulator.gameobjects.tiles;
+
+import com.srpgbattlesimulator.enums.TerrainType;
 
 /**
  * Created by Carl on 29/07/2019.

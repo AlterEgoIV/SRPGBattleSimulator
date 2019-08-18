@@ -1,14 +1,12 @@
-package com.srpgbattlesimulator.gameobjects;
+package com.srpgbattlesimulator.gameobjects.units;
 
 import com.badlogic.gdx.math.Vector2;
-import com.srpgbattlesimulator.MovementType;
-import com.srpgbattlesimulator.UnitAttack;
-import com.srpgbattlesimulator.UnitData;
+import com.srpgbattlesimulator.gameobjects.BattleObject;
+import com.srpgbattlesimulator.gameobjects.tiles.Tile;
 import com.srpgbattlesimulator.rendering.Shape;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by Carl on 06/05/2019.

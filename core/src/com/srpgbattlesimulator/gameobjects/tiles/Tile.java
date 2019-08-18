@@ -1,12 +1,12 @@
-package com.srpgbattlesimulator.gameobjects;
+package com.srpgbattlesimulator.gameobjects.tiles;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.srpgbattlesimulator.Terrain;
-import com.srpgbattlesimulator.TerrainType;
+import com.srpgbattlesimulator.enums.TerrainType;
+import com.srpgbattlesimulator.gameobjects.GameObject;
 import com.srpgbattlesimulator.rendering.Shape;
-import com.srpgbattlesimulator.rendering.ShapeName;
+import com.srpgbattlesimulator.enums.ShapeName;
 import com.srpgbattlesimulator.utilities.Timer;
 
 /**

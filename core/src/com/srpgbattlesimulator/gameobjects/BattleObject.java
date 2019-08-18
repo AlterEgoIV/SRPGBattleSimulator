@@ -2,6 +2,7 @@ package com.srpgbattlesimulator.gameobjects;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import com.srpgbattlesimulator.gameobjects.tiles.Tile;
 import com.srpgbattlesimulator.rendering.Shape;
 import com.srpgbattlesimulator.utilities.Timer;
 

@@ -1,4 +1,4 @@
-package com.srpgbattlesimulator;
+package com.srpgbattlesimulator.gameobjects.units;
 
 /**
  * Created by Carl on 03/08/2019.

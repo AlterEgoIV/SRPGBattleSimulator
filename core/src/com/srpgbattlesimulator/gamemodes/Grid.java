@@ -2,13 +2,13 @@ package com.srpgbattlesimulator.gamemodes;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.srpgbattlesimulator.MovementType;
-import com.srpgbattlesimulator.Terrain;
-import com.srpgbattlesimulator.TerrainType;
-import com.srpgbattlesimulator.gameobjects.Tile;
-import com.srpgbattlesimulator.gameobjects.Unit;
+import com.srpgbattlesimulator.enums.MovementType;
+import com.srpgbattlesimulator.gameobjects.tiles.Terrain;
+import com.srpgbattlesimulator.enums.TerrainType;
+import com.srpgbattlesimulator.gameobjects.tiles.Tile;
+import com.srpgbattlesimulator.gameobjects.units.Unit;
 import com.srpgbattlesimulator.rendering.Shape;
-import com.srpgbattlesimulator.rendering.ShapeName;
+import com.srpgbattlesimulator.enums.ShapeName;
 
 import java.util.*;
 

@@ -2,6 +2,7 @@ package com.srpgbattlesimulator.rendering;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.srpgbattlesimulator.enums.ShapeName;
 
 /**
  * Created by Carl on 06/05/2019.

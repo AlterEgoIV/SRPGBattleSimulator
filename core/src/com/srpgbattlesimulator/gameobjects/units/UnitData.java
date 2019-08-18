@@ -1,4 +1,6 @@
-package com.srpgbattlesimulator;
+package com.srpgbattlesimulator.gameobjects.units;
+
+import com.srpgbattlesimulator.enums.MovementType;
 
 /**
  * Created by Carl on 02/08/2019.

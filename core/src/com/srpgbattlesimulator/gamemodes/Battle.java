@@ -4,21 +4,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.srpgbattlesimulator.MovementType;
-import com.srpgbattlesimulator.UnitData;
-import com.srpgbattlesimulator.input.BattleInputHandler;
+import com.srpgbattlesimulator.enums.BattleState;
+import com.srpgbattlesimulator.enums.MovementType;
+import com.srpgbattlesimulator.gameobjects.units.UnitData;
 import com.srpgbattlesimulator.input.InputState;
 import com.srpgbattlesimulator.gameobjects.BattleCursor;
-import com.srpgbattlesimulator.gameobjects.Tile;
-import com.srpgbattlesimulator.gameobjects.Unit;
+import com.srpgbattlesimulator.gameobjects.tiles.Tile;
+import com.srpgbattlesimulator.gameobjects.units.Unit;
 import com.srpgbattlesimulator.rendering.Renderable;
 import com.srpgbattlesimulator.rendering.Shape;
-import com.srpgbattlesimulator.rendering.ShapeName;
+import com.srpgbattlesimulator.enums.ShapeName;
+import com.srpgbattlesimulator.states.ControlCursorBattleState;
+import com.srpgbattlesimulator.states.ControlUnitBattleState;
+import com.srpgbattlesimulator.states.State;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -27,16 +27,19 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Battle
 {
     private List<Renderable> renderables;
-    private boolean isOver, isNewTurn;
-    private int turnCount, currentUnit;
-    private Grid grid;
+    public boolean isOver, isNewTurn;
+    public int turnCount, currentUnit;
+    public Grid grid;
     private int gridColumns, gridRows;
-    private BattleState battleState;
-    private List<Unit> units;
-    private Unit activeUnit;
-    private BattleCursor battleCursor;
-    private BattleInputHandler inputHandler;
-    private int currentTarget;
+    //private BattleState battleState;
+    public List<Unit> units;
+    public Unit activeUnit;
+    public BattleCursor battleCursor;
+    //public BattleInputHandler inputHandler;
+    public InputState inputState;
+    public int currentTarget;
+    private State currentState;
+    private Map<BattleState, State> states;
 
     public Battle(InputState inputState, List<Renderable> renderables)
     {
@@ -47,29 +50,41 @@ public class Battle
         this.gridColumns = 20;
         this.gridRows = 20;
         this.currentUnit = 0;
+        this.inputState = inputState;
         grid = new Grid(gridColumns, gridRows, (float)Gdx.graphics.getWidth() / gridColumns, (float)Gdx.graphics.getHeight() / gridRows);
-        battleState = BattleState.TRANSITION_CURSOR_STATE;
+        //battleState = BattleState.TRANSITION_CURSOR_STATE;
         units = new ArrayList<Unit>();
         createUnits();
         setTurnOrder();
         activeUnit = units.get(currentUnit);
         battleCursor = createGridCursor(activeUnit.position.cpy(), grid.getTileWidth(), grid.getTileHeight(), Color.CLEAR, Color.WHITE, activeUnit.startTile);
-        inputHandler = new BattleInputHandler(inputState, this);
+        //inputHandler = new BattleInputHandler(inputState, this);
         this.currentTarget = 0;
+        states = new HashMap<>();
+        initialiseStates();
+        this.currentState = states.get(BattleState.CONTROL_CURSOR_STATE);
     }
 
     public void update()
     {
-        if(isNewTurn)
-        {
-            ++turnCount;
-            isNewTurn = false;
-        }
-
-        activeUnit = units.get(currentUnit);
-
-        updateBattleState();
+        currentState.update();
+//        if(isNewTurn)
+//        {
+//            ++turnCount;
+//            isNewTurn = false;
+//        }
+//
+//        activeUnit = units.get(currentUnit);
+//
+//        updateBattleState();
         updateRenderables();
+    }
+
+    private void initialiseStates()
+    {
+        states.put(BattleState.CONTROL_CURSOR_STATE, new ControlCursorBattleState(this));
+        states.put(BattleState.CONTROL_UNIT_STATE, new ControlUnitBattleState(this));
+        states.put(BattleState.AI_UPDATE_STATE, new ControlUnitBattleState(this));
     }
 
     public boolean isOver()
@@ -77,166 +92,173 @@ public class Battle
         return isOver;
     }
 
-    private void updateBattleState()
-    {
-        switch(battleState)
-        {
-            case TRANSITION_CURSOR_STATE:
-            {
-                if(!battleCursor.isMoving()) battleCursor.setTargetTile(activeUnit.startTile);
-                if(battleCursor.isMoving()) battleCursor.move();
-                if(!battleCursor.isMoving()) transitionBattleStateTo(activeUnit.unitData.isPlayerUnit() ? BattleState.CONTROL_CURSOR_STATE : BattleState.ENEMY_UNIT_UPDATE_STATE);
-
-                break;
-            }
-
-            case CONTROL_CURSOR_STATE:
-            {
-                if(!battleCursor.isMoving()) inputHandler.update();
-                if(battleCursor.isMoving()) battleCursor.move();
-
-                break;
-            }
-
-            case CONTROL_PLAYER_UNIT_STATE:
-            {
-                if(!activeUnit.isMoving()) inputHandler.update();
-                if(activeUnit.isMoving()) activeUnit.move();
-
-                for(Tile tile : grid.activeTiles)
-                {
-                    tile.update();
-                }
-
-                break;
-            }
-
-            case ENEMY_UNIT_UPDATE_STATE:
-            {
-                transitionBattleStateTo(BattleState.TRANSITION_CURSOR_STATE);
-
-                break;
-            }
-
-            case SELECT_TARGET_STATE:
-            {
-                if(!battleCursor.isMoving()) inputHandler.update();
-                if(battleCursor.isMoving()) battleCursor.move();
-
-                break;
-            }
-        }
-    }
+//    private void updateBattleState()
+//    {
+//        switch(battleState)
+//        {
+//            case TRANSITION_CURSOR_STATE:
+//            {
+//                if(!battleCursor.isMoving()) battleCursor.setTargetTile(activeUnit.startTile);
+//                if(battleCursor.isMoving()) battleCursor.move();
+//                if(!battleCursor.isMoving()) transitionBattleStateTo(activeUnit.unitData.isPlayerUnit() ? BattleState.CONTROL_CURSOR_STATE : BattleState.AI_UPDATE_STATE);
+//
+//                break;
+//            }
+//
+//            case CONTROL_CURSOR_STATE:
+//            {
+//                if(!battleCursor.isMoving()) inputHandler.update();
+//                if(battleCursor.isMoving()) battleCursor.move();
+//
+//                break;
+//            }
+//
+//            case CONTROL_UNIT_STATE:
+//            {
+//                if(!activeUnit.isMoving()) inputHandler.update();
+//                if(activeUnit.isMoving()) activeUnit.move();
+//
+//                for(Tile tile : grid.activeTiles)
+//                {
+//                    tile.update();
+//                }
+//
+//                break;
+//            }
+//
+//            case ENEMY_UNIT_UPDATE_STATE:
+//            {
+//                transitionBattleStateTo(BattleState.TRANSITION_CURSOR_STATE);
+//
+//                break;
+//            }
+//
+//            case SELECT_TARGET_STATE:
+//            {
+//                if(!battleCursor.isMoving()) inputHandler.update();
+//                if(battleCursor.isMoving()) battleCursor.move();
+//
+//                break;
+//            }
+//        }
+//    }
 
     public void transitionBattleStateTo(BattleState newState)
     {
-        exitBattleState(battleState);
-        battleState = newState;
-        enterBattleState(newState);
+        currentState.exit();
+        currentState = states.get(newState);
+        currentState.enter();
     }
 
-    private void enterBattleState(BattleState battleState)
-    {
-        switch(battleState)
-        {
-            case TRANSITION_CURSOR_STATE:
-            {
-                battleCursor.show();
+//    public void transitionBattleStateTo(BattleState newState)
+//    {
+//        exitBattleState(battleState);
+//        battleState = newState;
+//        enterBattleState(newState);
+//    }
 
-                break;
-            }
+//    private void enterBattleState(BattleState battleState)
+//    {
+//        switch(battleState)
+//        {
+//            case TRANSITION_CURSOR_STATE:
+//            {
+//                battleCursor.show();
+//
+//                break;
+//            }
+//
+//            case CONTROL_CURSOR_STATE:
+//            {
+//                battleCursor.show();
+//
+//                break;
+//            }
+//
+//            case CONTROL_UNIT_STATE:
+//            {
+//                activeUnit.shape.outlineColor = Color.WHITE;
+//                grid.setActiveTiles(activeUnit);
+//
+//                for(Tile tile : grid.activeTiles)
+//                {
+//                    tile.hue = 0f;
+//                    tile.timer.reset();
+//                    if(tile.deltaColor < 0) tile.deltaColor *= -1;
+//                }
+//
+//                break;
+//            }
+//
+//            case AI_UPDATE_STATE:
+//            {
+//                break;
+//            }
+//
+//            case SELECT_TARGET_STATE:
+//            {
+//                System.out.println("Entered SELECT TARGET STATE");
+//
+//                battleCursor.show();
+//
+//                currentTarget = 0;
+//                activeUnit.currentTarget = activeUnit.attackTargets.get(currentTarget);
+//
+//                battleCursor.currentTile = activeUnit.attackTargets.get(currentTarget).currentTile;
+//                battleCursor.position.set(activeUnit.attackTargets.get(currentTarget).currentTile.position);
+//
+//                break;
+//            }
+//        }
+//    }
 
-            case CONTROL_CURSOR_STATE:
-            {
-                battleCursor.show();
-
-                break;
-            }
-
-            case CONTROL_PLAYER_UNIT_STATE:
-            {
-                activeUnit.shape.outlineColor = Color.WHITE;
-                grid.setActiveTiles(activeUnit);
-
-                for(Tile tile : grid.activeTiles)
-                {
-                    tile.hue = 0f;
-                    tile.timer.reset();
-                    if(tile.deltaColor < 0) tile.deltaColor *= -1;
-                }
-
-                break;
-            }
-
-            case ENEMY_UNIT_UPDATE_STATE:
-            {
-                break;
-            }
-
-            case SELECT_TARGET_STATE:
-            {
-                System.out.println("Entered SELECT TARGET STATE");
-
-                battleCursor.show();
-
-                currentTarget = 0;
-                activeUnit.currentTarget = activeUnit.attackTargets.get(currentTarget);
-
-                battleCursor.currentTile = activeUnit.attackTargets.get(currentTarget).currentTile;
-                battleCursor.position.set(activeUnit.attackTargets.get(currentTarget).currentTile.position);
-
-                break;
-            }
-        }
-    }
-
-    private void exitBattleState(BattleState battleState)
-    {
-        switch(battleState)
-        {
-            case TRANSITION_CURSOR_STATE:
-            {
-                battleCursor.startTile = battleCursor.currentTile;
-                battleCursor.hide();
-
-                break;
-            }
-
-            case CONTROL_CURSOR_STATE:
-            {
-                inputHandler.clearKey(Input.Keys.ENTER);
-                battleCursor.hide();
-
-                break;
-            }
-
-            case CONTROL_PLAYER_UNIT_STATE:
-            {
-                inputHandler.clearKey(Input.Keys.ENTER);
+//    private void exitBattleState(BattleState battleState)
+//    {
+//        switch(battleState)
+//        {
+//            case TRANSITION_CURSOR_STATE:
+//            {
+//                battleCursor.startTile = battleCursor.currentTile;
+//                battleCursor.hide();
+//
+//                break;
+//            }
+//
+//            case CONTROL_CURSOR_STATE:
+//            {
+//                inputHandler.clearKey(Input.Keys.ENTER);
+//                battleCursor.hide();
+//
+//                break;
+//            }
+//
+//            case CONTROL_UNIT_STATE:
+//            {
+//                inputHandler.clearKey(Input.Keys.ENTER);
+////                currentUnit = currentUnit < units.size() - 1 ? currentUnit + 1 : 0;
+////                activeUnit.startTile = activeUnit.currentTile;
+////                activeUnit.shape.outlineColor = Color.CLEAR;
+////                battleCursor.startTile = activeUnit.startTile;
+////                battleCursor.currentTile = battleCursor.startTile;
+////                battleCursor.position.set(battleCursor.startTile.position);
+////                grid.activeTiles.clear();
+//
+//                break;
+//            }
+//
+//            case AI_UPDATE_STATE:
+//            {
 //                currentUnit = currentUnit < units.size() - 1 ? currentUnit + 1 : 0;
-//                activeUnit.startTile = activeUnit.currentTile;
-//                activeUnit.shape.outlineColor = Color.CLEAR;
-//                battleCursor.startTile = activeUnit.startTile;
-//                battleCursor.currentTile = battleCursor.startTile;
-//                battleCursor.position.set(battleCursor.startTile.position);
-//                grid.activeTiles.clear();
-
-                break;
-            }
-
-            case ENEMY_UNIT_UPDATE_STATE:
-            {
-                currentUnit = currentUnit < units.size() - 1 ? currentUnit + 1 : 0;
-
-                break;
-            }
-
-            case SELECT_TARGET_STATE:
-            {
-                break;
-            }
-        }
-    }
+//
+//                break;
+//            }
+//
+//            case SELECT_TARGET_STATE:
+//            {
+//                break;
+//            }
+//        }
+//    }
 
     private void setTurnOrder()
     {
@@ -347,8 +369,8 @@ public class Battle
         return new Unit(position, width, height, new Shape(position, width, height, ShapeName.ELLIPSE, fillColor, outlineColor, 4), startTile, unitData);
     }
 
-    public BattleState getBattleState()
-    {
-        return battleState;
-    }
+//    public BattleState getBattleState()
+//    {
+//        return battleState;
+//    }
 }

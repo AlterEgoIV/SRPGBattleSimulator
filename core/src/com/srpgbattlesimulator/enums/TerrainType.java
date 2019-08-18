@@ -1,4 +1,4 @@
-package com.srpgbattlesimulator;
+package com.srpgbattlesimulator.enums;
 
 /**
  * Created by Carl on 01/07/2019.
